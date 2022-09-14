@@ -1,10 +1,29 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { CircularProgress, TextField } from "@mui/material";
-import useSnack from "./useSnack";
+import { CircularProgress } from "@mui/material";
+import { useSnack } from "paradox-hooks";
+import { encodeData } from "../utilities";
 
 const Handler = createContext(null);
 
-function useForm(initialValues, validators = {}) {
+function useForm(fields) {
+    const initialValues = useMemo(() => {
+        const inputs = {};
+        for (const name in fields) {
+            inputs[name] = fields[name].value || "";
+        }
+        return inputs;
+    }, [fields]);
+
+    const validators = useMemo(() => {
+        const validators = {};
+        for (const name in fields) {
+            if (fields[name].validator) {
+                validators[name] = fields[name].validator;
+            }
+        }
+        return validators;
+    }, [fields]);
+
     const [values, setValues] = useState(initialValues);
     const [errors, setErrors] = useState({});
 
@@ -56,39 +75,15 @@ function useForm(initialValues, validators = {}) {
         return true;
     }, [values, validate]);
 
-    const handlers = useMemo(() => {
+    return useMemo(() => {
         return { values, onChangeHandler, errors, submitValidator, reset };
     }, [values, onChangeHandler, errors, submitValidator, reset]);
-
-    return handlers;
 }
 
-function convertToFormData(values) {
-    const formData = new FormData();
-    for (const name in values) {
-        const value = values[name];
-        if (Array.isArray(value)) {
-            value.forEach(value => formData.append(name, value));
-        } else {
-            console.log("setting", name, value);
-            formData.set(name, value);
-        }
-    }
-    return formData;
-}
-
-function encodeData(values, enctype) {
-    switch (enctype) {
-        case "multipart/form-data":
-            return convertToFormData(values);
-        default:
-            return values;
-    }
-}
-
-function Form({ children, onSubmit, handlers, enctype, ...rest }) {
+function Form({ children, onSubmit, fields, enctype, ...rest }) {
     const [loading, setLoading] = useState(false);
     const { snackBar, showMessage } = useSnack();
+    const handlers = useForm(fields);
     const submitHandler = async e => {
         setLoading(true);
         e.preventDefault();
@@ -131,32 +126,4 @@ function Submit(props) {
     return props.children(loading ? loader || defaultLoader : null);
 }
 
-function Input(props) {
-    const { sx, name, ...rest } = props;
-    const { values, errors, onChangeHandler, loading } = useContext(Handler);
-    return (
-        <TextField
-            value={values[name]}
-            name={name}
-            onChange={onChangeHandler}
-            disabled={loading}
-            {...rest}
-            sx={{
-                marginTop: "8px",
-                ...sx,
-                "& .MuiOutlinedInput-input": {
-                    padding: "8px",
-                },
-            }}
-            {...(errors[name] ? { error: true, helperText: errors[name] } : {})}
-        />
-    );
-}
-
-const validators = {
-    email: email =>
-        /[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+/.test(email) ? "" : "Email is not valid",
-    phone: phone => (/\d{10}/.test(phone) ? "" : "Phone number must be 10 digits long"),
-};
-
-export { Form, useForm, Input, Submit, validators };
+export { Form, Submit, Handler };

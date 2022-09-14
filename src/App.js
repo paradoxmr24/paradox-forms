@@ -1,12 +1,7 @@
-import { Route, Routes } from "react-router-dom";
-import Register from "./Pages/Register";
+import UseFormImplementation from "./Pages/UseFormImplementation";
 
 function App() {
-    return (
-        <Routes>
-            <Route path="/register" element={<Register />} />
-        </Routes>
-    );
+    return <UseFormImplementation />;
 }
 
 export default App;
