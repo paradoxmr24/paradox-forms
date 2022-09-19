@@ -15,5 +15,11 @@ Object.defineProperty(exports, "Submit", {
     return _useForm.Submit;
   }
 });
+Object.defineProperty(exports, "useForm", {
+  enumerable: true,
+  get: function get() {
+    return _useForm.useForm;
+  }
+});
 
-var _useForm = require("./useForm/useForm");
+var _useForm = require("./useForm/");

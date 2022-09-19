@@ -8,6 +8,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.Form = Form;
 exports.Handler = void 0;
 exports.Submit = Submit;
+exports.useForm = useForm;
 
 require("core-js/modules/web.dom-collections.iterator.js");
 
@@ -21,7 +22,11 @@ var _paradoxHooks = require("paradox-hooks");
 
 var _utilities = require("../utilities");
 
-const _excluded = ["children", "onSubmit", "fields", "enctype"];
+var _axios = _interopRequireDefault(require("axios"));
+
+const _excluded = ["children", "onSubmit", "onError", "handlers", "method", "action", "enctype", "retainOnSubmit"];
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
@@ -121,8 +126,12 @@ function Form(_ref) {
   let {
     children,
     onSubmit,
-    fields,
-    enctype
+    onError,
+    handlers,
+    method,
+    action,
+    enctype,
+    retainOnSubmit
   } = _ref,
       rest = _objectWithoutProperties(_ref, _excluded);
 
@@ -131,26 +140,47 @@ function Form(_ref) {
     snackBar,
     showMessage
   } = (0, _paradoxHooks.useSnack)();
-  const handlers = useForm(fields);
 
-  const submitHandler = async e => {
+  const submitMiddleware = async e => {
     setLoading(true);
     e.preventDefault();
 
-    if (handlers.submitValidator()) {
-      try {
-        const values = (0, _utilities.encodeData)(handlers.values, enctype);
-        const message = await onSubmit(values);
-        showMessage({
-          success: message
-        });
-      } catch (e) {
-        showMessage({
-          error: e.message
-        });
+    if (!handlers.submitValidator()) {
+      console.log("Form not validated");
+    }
+
+    const values = (0, _utilities.encodeData)(handlers.values, enctype);
+    const requestMethod = createAxiosMethod(method);
+
+    try {
+      const response = await (0, _axios.default)({
+        url: action,
+        method: requestMethod,
+        data: values
+      });
+
+      if (!retainOnSubmit) {
+        handlers.reset();
       }
-    } else {
-      console.log("Form is not validated");
+
+      const message = await onSubmit(response);
+      showMessage({
+        success: message
+      });
+    } catch (e) {
+      setLoading(false);
+
+      if (e.name === "AxiosError") {
+        if (typeof onError === "function") {
+          return onError(e);
+        } else {
+          throw e;
+        }
+      }
+
+      showMessage({
+        error: e.message
+      });
     }
 
     setLoading(false);
@@ -162,7 +192,7 @@ function Form(_ref) {
       showMessage
     })
   }, /*#__PURE__*/_react.default.createElement("form", _extends({
-    onSubmit: submitHandler,
+    onSubmit: submitMiddleware,
     autoComplete: "off",
     noValidate: true
   }, rest), children), snackBar);
@@ -185,4 +215,16 @@ function Submit(props) {
   }, loaderProps));
 
   return props.children(loading ? loader || defaultLoader : null);
+} // ------------- Utilities ------------------- //
+
+
+function createAxiosMethod() {
+  let method = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "GET";
+  method = method.toLowerCase();
+
+  if (typeof _axios.default[method] === "function") {
+    return method;
+  } else {
+    throw new Error("Invalid method ".concat(method, " not supported"));
+  }
 }

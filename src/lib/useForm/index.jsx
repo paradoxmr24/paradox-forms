@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useMemo, useState } from
 import { CircularProgress } from "@mui/material";
 import { useSnack } from "paradox-hooks";
 import { encodeData } from "../utilities";
+import axios from "axios";
 
 const Handler = createContext(null);
 
@@ -80,30 +81,56 @@ function useForm(fields) {
     }, [values, onChangeHandler, errors, submitValidator, reset]);
 }
 
-function Form({ children, onSubmit, fields, enctype, ...rest }) {
+function Form({
+    children,
+    onSubmit,
+    onError,
+    handlers,
+    method,
+    action,
+    enctype,
+    retainOnSubmit,
+    ...rest
+}) {
     const [loading, setLoading] = useState(false);
     const { snackBar, showMessage } = useSnack();
-    const handlers = useForm(fields);
-    const submitHandler = async e => {
+    const submitMiddleware = async e => {
         setLoading(true);
         e.preventDefault();
-        if (handlers.submitValidator()) {
-            try {
-                const values = encodeData(handlers.values, enctype);
-                const message = await onSubmit(values);
-                showMessage({ success: message });
-            } catch (e) {
-                showMessage({ error: e.message });
-            }
-        } else {
-            console.log("Form is not validated");
+        if (!handlers.submitValidator()) {
+            console.log("Form not validated");
         }
+        const values = encodeData(handlers.values, enctype);
+        const requestMethod = createAxiosMethod(method);
+        try {
+            const response = await axios({
+                url: action,
+                method: requestMethod,
+                data: values,
+            });
+            if (!retainOnSubmit) {
+                handlers.reset();
+            }
+            const message = await onSubmit(response);
+            showMessage({ success: message });
+        } catch (e) {
+            setLoading(false);
+            if (e.name === "AxiosError") {
+                if (typeof onError === "function") {
+                    return onError(e);
+                } else {
+                    throw e;
+                }
+            }
+            showMessage({ error: e.message });
+        }
+
         setLoading(false);
     };
 
     return (
         <Handler.Provider value={{ ...handlers, loading, showMessage }}>
-            <form onSubmit={submitHandler} autoComplete="off" noValidate {...rest}>
+            <form onSubmit={submitMiddleware} autoComplete="off" noValidate {...rest}>
                 {children}
             </form>
             {snackBar}
@@ -126,4 +153,14 @@ function Submit(props) {
     return props.children(loading ? loader || defaultLoader : null);
 }
 
-export { Form, Submit, Handler };
+// ------------- Utilities ------------------- //
+function createAxiosMethod(method = "GET") {
+    method = method.toLowerCase();
+    if (typeof axios[method] === "function") {
+        return method;
+    } else {
+        throw new Error(`Invalid method ${method} not supported`);
+    }
+}
+
+export { Form, Submit, Handler, useForm };

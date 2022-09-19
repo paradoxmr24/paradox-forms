@@ -1,7 +1,7 @@
 import React from "react";
 import { TextField } from "@mui/material";
 import { useContext } from "react";
-import { Handler } from "../useForm/useForm";
+import { Handler } from "../useForm/";
 
 function Input(props) {
     const { sx, name, ...rest } = props;

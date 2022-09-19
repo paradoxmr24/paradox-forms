@@ -1,3 +1,3 @@
-import { Form, Submit } from "./useForm/useForm";
+import { Form, Submit, useForm } from "./useForm/";
 
-export { Form, Submit };
+export { Form, Submit, useForm };

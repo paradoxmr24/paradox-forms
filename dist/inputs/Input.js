@@ -13,7 +13,7 @@ var _react = _interopRequireWildcard(require("react"));
 
 var _material = require("@mui/material");
 
-var _useForm = require("../useForm/useForm");
+var _useForm = require("../useForm/");
 
 const _excluded = ["sx", "name"];
 

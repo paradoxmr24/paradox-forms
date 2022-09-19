@@ -1,3 +1,4 @@
 import encodeData from "./encodeData";
+import convertToMultipart from "./convertToMultipart";
 
-export { encodeData };
+export { encodeData, convertToMultipart };
