@@ -4,15 +4,14 @@ import { Form, Submit, useForm } from "../lib";
 import validators from "../lib/validators";
 import { Input } from "../lib/inputs";
 import { Card, Divider, Typography, Button } from "@mui/material";
-import axios from "axios";
 
 const UseFormImplementation = () => {
     const handlers = useForm(
         useMemo(
             () => ({
-                name: { value: "" },
-                email: { value: "" },
-                phone: { value: "" },
+                name: { value: "", validator: "name is required" },
+                email: { value: "", validator: validators.email },
+                phone: { value: "", validator: validators.phone },
             }),
             []
         )
@@ -41,6 +40,13 @@ const UseFormImplementation = () => {
         console.log(err);
     };
 
+    const fillData = function () {
+        handlers.setValues({
+            name: "Brendan Eich",
+            email: "eich@gmail",
+        });
+    };
+
     return (
         <>
             <Box p="40px" sx={{ background: "#e3e3e3" }}>
@@ -50,7 +56,7 @@ const UseFormImplementation = () => {
                     <Form
                         onSubmit={submit}
                         action="http://localhost:8000/verify"
-                        method="GET"
+                        method="POST"
                         handlers={handlers}
                         onError={errorHandler}
                         retainOnSubmit>
@@ -59,11 +65,27 @@ const UseFormImplementation = () => {
                         <Input variant="outlined" fullWidth name="phone" placeholder="Phone" />
                         <Submit loaderProps={{ sx: { color: "white" } }}>
                             {loader => (
-                                <Button variant="contained" type="submit" fullWidth sx={{ mt: 3 }}>
+                                <Button
+                                    variant="contained"
+                                    type="submit"
+                                    fullWidth
+                                    sx={{ mt: 3 }}
+                                    disabled={Boolean(loader)}>
                                     Submit {loader}
                                 </Button>
                             )}
                         </Submit>
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            sx={{ mt: 3 }}
+                            color="secondary"
+                            onClick={handlers.reset}>
+                            Reset
+                        </Button>
+                        <Button variant="contained" fullWidth sx={{ mt: 3 }} onClick={fillData}>
+                            Fill Data
+                        </Button>
                     </Form>
                 </Card>
             </Box>

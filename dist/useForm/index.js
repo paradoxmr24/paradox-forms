@@ -101,7 +101,12 @@ function useForm(fields) {
   }, [validate]);
   const reset = (0, _react.useCallback)(() => {
     setValues(initialValues);
+    setErrors({});
   }, [initialValues]);
+  const setManually = (0, _react.useCallback)(values => {
+    setValues(prev => _objectSpread(_objectSpread({}, prev), values));
+    setErrors({});
+  }, [setValues]);
   const submitValidator = (0, _react.useCallback)(() => {
     for (const name in values) {
       if (!validate(name, values[name])) {
@@ -117,9 +122,10 @@ function useForm(fields) {
       onChangeHandler,
       errors,
       submitValidator,
-      reset
+      reset,
+      setValues: setManually
     };
-  }, [values, onChangeHandler, errors, submitValidator, reset]);
+  }, [values, onChangeHandler, errors, submitValidator, reset, setManually]);
 }
 
 function Form(_ref) {
@@ -142,13 +148,13 @@ function Form(_ref) {
   } = (0, _paradoxHooks.useSnack)();
 
   const submitMiddleware = async e => {
-    setLoading(true);
     e.preventDefault();
 
     if (!handlers.submitValidator()) {
-      console.log("Form not validated");
+      return console.log("Form not validated");
     }
 
+    setLoading(true);
     const values = (0, _utilities.encodeData)(handlers.values, enctype);
     const requestMethod = createAxiosMethod(method);
 

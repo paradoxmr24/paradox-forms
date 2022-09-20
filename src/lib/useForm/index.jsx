@@ -65,7 +65,16 @@ function useForm(fields) {
 
     const reset = useCallback(() => {
         setValues(initialValues);
+        setErrors({});
     }, [initialValues]);
+
+    const setManually = useCallback(
+        values => {
+            setValues(prev => ({ ...prev, ...values }));
+            setErrors({});
+        },
+        [setValues]
+    );
 
     const submitValidator = useCallback(() => {
         for (const name in values) {
@@ -77,8 +86,8 @@ function useForm(fields) {
     }, [values, validate]);
 
     return useMemo(() => {
-        return { values, onChangeHandler, errors, submitValidator, reset };
-    }, [values, onChangeHandler, errors, submitValidator, reset]);
+        return { values, onChangeHandler, errors, submitValidator, reset, setValues: setManually };
+    }, [values, onChangeHandler, errors, submitValidator, reset, setManually]);
 }
 
 function Form({
@@ -95,11 +104,11 @@ function Form({
     const [loading, setLoading] = useState(false);
     const { snackBar, showMessage } = useSnack();
     const submitMiddleware = async e => {
-        setLoading(true);
         e.preventDefault();
         if (!handlers.submitValidator()) {
-            console.log("Form not validated");
+            return console.log("Form not validated");
         }
+        setLoading(true);
         const values = encodeData(handlers.values, enctype);
         const requestMethod = createAxiosMethod(method);
         try {
