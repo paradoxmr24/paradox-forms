@@ -115,7 +115,10 @@ function useForm(fields) {
     setErrors({});
   }, [initialValues]);
   const setManually = (0, _react.useCallback)(values => {
-    setValues(prev => _objectSpread(_objectSpread({}, prev), values));
+    setValues(prev => {
+      const newValues = values === "function" ? values[prev] : values;
+      return _objectSpread(_objectSpread({}, prev), newValues);
+    });
     setErrors({});
   }, [setValues]);
   const submitValidator = (0, _react.useCallback)(() => {
