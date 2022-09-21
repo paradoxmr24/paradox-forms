@@ -169,7 +169,7 @@ function Form(_ref) {
         handlers.reset();
       }
 
-      const message = await onSubmit(response);
+      const message = await onSubmit(response, handlers.values);
       showMessage({
         success: message
       });
@@ -205,9 +205,15 @@ function Form(_ref) {
 }
 
 function Submit(props) {
+  const handlers = (0, _react.useContext)(Handler);
+
+  if (!handlers) {
+    throw new Error("You are using Submit without a Form Component (you may be importing Form Component from wrong path");
+  }
+
   const {
     loading
-  } = (0, _react.useContext)(Handler);
+  } = handlers;
   const {
     loader,
     loaderProps
