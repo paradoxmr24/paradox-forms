@@ -9,3 +9,6 @@ Added date eg. new Date in values will work with date input
 v1.1.2
 Added warning if submit is used without Form
 Passed value as a second argument in onSubmit function
+
+v1.2.0
+Added final field in fields to modify the values before submitting

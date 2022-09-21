@@ -25,6 +25,16 @@ function useForm(fields) {
         return validators;
     }, [fields]);
 
+    const finals = useMemo(() => {
+        const finals = {};
+        for (const name in fields) {
+            if (fields[name].final) {
+                finals[name] = fields[name].final;
+            }
+        }
+        return finals;
+    }, [fields]);
+
     const [values, setValues] = useState(initialValues);
     const [errors, setErrors] = useState({});
 
@@ -86,8 +96,16 @@ function useForm(fields) {
     }, [values, validate]);
 
     return useMemo(() => {
-        return { values, onChangeHandler, errors, submitValidator, reset, setValues: setManually };
-    }, [values, onChangeHandler, errors, submitValidator, reset, setManually]);
+        return {
+            values,
+            onChangeHandler,
+            errors,
+            submitValidator,
+            reset,
+            setValues: setManually,
+            finals,
+        };
+    }, [values, onChangeHandler, errors, submitValidator, reset, setManually, finals]);
 }
 
 function Form({
@@ -109,7 +127,9 @@ function Form({
             return console.log("Form not validated");
         }
         setLoading(true);
-        const values = encodeData(handlers.values, enctype);
+
+        const finalValues = finalizeValues(handlers);
+        const values = encodeData(finalValues, enctype);
         const requestMethod = createAxiosMethod(method);
         try {
             const response = await axios({
@@ -176,6 +196,14 @@ function createAxiosMethod(method = "GET") {
     } else {
         throw new Error(`Invalid method ${method} not supported`);
     }
+}
+
+function finalizeValues(handlers) {
+    const values = { ...handlers.values };
+    for (const field in handlers.finals) {
+        values[field] = handlers.finals[field](handlers.values[field]);
+    }
+    return values;
 }
 
 export { Form, Submit, Handler, useForm };

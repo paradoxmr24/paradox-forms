@@ -9,7 +9,11 @@ const UseFormImplementation = () => {
     const handlers = useForm(
         useMemo(
             () => ({
-                name: { value: "", validator: "name is required" },
+                name: {
+                    value: "",
+                    validator: "name is required",
+                    final: value => value + " is my name",
+                },
                 email: { value: "", validator: validators.email },
                 phone: { value: "", validator: validators.phone },
                 dob: { value: new Date() },
@@ -29,7 +33,8 @@ const UseFormImplementation = () => {
         )
     );
 
-    const submit = async response => {
+    const submit = async (response, values) => {
+        console.log(values);
         if (response.data.success) {
             return "Success response";
         } else {
