@@ -12,3 +12,6 @@ Passed value as a second argument in onSubmit function
 
 v1.2.0
 Added final field in fields to modify the values before submitting
+
+v1.2.1
+Passed value as a argument in setValues function
