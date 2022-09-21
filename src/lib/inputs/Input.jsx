@@ -5,22 +5,40 @@ import { Handler } from "../useForm/";
 
 function Input(props) {
     const { sx, name, ...rest } = props;
-    const { values, errors, onChangeHandler, loading } = useContext(Handler);
+    const { values, errors, setValues, onChangeHandler, loading } = useContext(Handler);
+
+    let value = values[name];
+    let changeHandler = onChangeHandler;
+    if (values[name] instanceof Date) {
+        const date = values[name];
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, "0");
+        const day = date.getDate().toString().padStart(2, "0");
+
+        value = `${year}-${month}-${day}`;
+
+        changeHandler = e => {
+            setValues({
+                [name]: new Date(e.target.value),
+            });
+        };
+    }
+
     return (
         <TextField
-            value={values[name]}
+            value={value}
             name={name}
-            onChange={onChangeHandler}
+            onChange={changeHandler}
             disabled={loading}
-            {...rest}
             sx={{
                 marginTop: "8px",
-                ...sx,
                 "& .MuiOutlinedInput-input": {
                     padding: "8px",
                 },
+                ...sx,
             }}
             {...(errors[name] ? { error: true, helperText: errors[name] } : {})}
+            {...rest}
         />
     );
 }

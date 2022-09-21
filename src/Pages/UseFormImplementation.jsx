@@ -12,6 +12,7 @@ const UseFormImplementation = () => {
                 name: { value: "", validator: "name is required" },
                 email: { value: "", validator: validators.email },
                 phone: { value: "", validator: validators.phone },
+                dob: { value: new Date() },
             }),
             []
         )
@@ -63,6 +64,7 @@ const UseFormImplementation = () => {
                         <Input variant="outlined" fullWidth name="name" placeholder="Name" />
                         <Input variant="outlined" fullWidth name="email" placeholder="Email" />
                         <Input variant="outlined" fullWidth name="phone" placeholder="Phone" />
+                        <Input variant="outlined" type="date" fullWidth name="dob" />
                         <Submit loaderProps={{ sx: { color: "white" } }}>
                             {loader => (
                                 <Button
