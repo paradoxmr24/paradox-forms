@@ -81,7 +81,7 @@ function useForm(fields) {
     const setManually = useCallback(
         values => {
             setValues(prev => {
-                const newValues = values === "function" ? values[prev] : values;
+                const newValues = typeof values === "function" ? values(prev) : values;
                 return { ...prev, ...newValues };
             });
             setErrors({});

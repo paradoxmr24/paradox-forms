@@ -13,5 +13,8 @@ Passed value as a second argument in onSubmit function
 v1.2.0
 Added final field in fields to modify the values before submitting
 
-v1.2.1
+v1.2.1 (Bugged)
 Passed value as a argument in setValues function
+
+v1.2.2
+Bugs from previous version Solved

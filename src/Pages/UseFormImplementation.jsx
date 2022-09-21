@@ -47,10 +47,10 @@ const UseFormImplementation = () => {
     };
 
     const fillData = function () {
-        handlers.setValues({
-            name: "Brendan Eich",
+        handlers.setValues(values => ({
+            name: "Brendan Eich " + values.name,
             email: "eich@gmail",
-        });
+        }));
     };
 
     return (
