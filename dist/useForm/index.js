@@ -68,6 +68,17 @@ function useForm(fields) {
 
     return validators;
   }, [fields]);
+  const finals = (0, _react.useMemo)(() => {
+    const finals = {};
+
+    for (const name in fields) {
+      if (fields[name].final) {
+        finals[name] = fields[name].final;
+      }
+    }
+
+    return finals;
+  }, [fields]);
   const [values, setValues] = (0, _react.useState)(initialValues);
   const [errors, setErrors] = (0, _react.useState)({});
   const validate = (0, _react.useCallback)((name, value) => {
@@ -123,9 +134,10 @@ function useForm(fields) {
       errors,
       submitValidator,
       reset,
-      setValues: setManually
+      setValues: setManually,
+      finals
     };
-  }, [values, onChangeHandler, errors, submitValidator, reset, setManually]);
+  }, [values, onChangeHandler, errors, submitValidator, reset, setManually, finals]);
 }
 
 function Form(_ref) {
@@ -155,7 +167,8 @@ function Form(_ref) {
     }
 
     setLoading(true);
-    const values = (0, _utilities.encodeData)(handlers.values, enctype);
+    const finalValues = finalizeValues(handlers);
+    const values = (0, _utilities.encodeData)(finalValues, enctype);
     const requestMethod = createAxiosMethod(method);
 
     try {
@@ -239,4 +252,14 @@ function createAxiosMethod() {
   } else {
     throw new Error("Invalid method ".concat(method, " not supported"));
   }
+}
+
+function finalizeValues(handlers) {
+  const values = _objectSpread({}, handlers.values);
+
+  for (const field in handlers.finals) {
+    values[field] = handlers.finals[field](handlers.values[field]);
+  }
+
+  return values;
 }
