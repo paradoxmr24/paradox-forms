@@ -120,7 +120,7 @@ function Form({
             if (!retainOnSubmit) {
                 handlers.reset();
             }
-            const message = await onSubmit(response);
+            const message = await onSubmit(response, handlers.values);
             showMessage({ success: message });
         } catch (e) {
             setLoading(false);
@@ -148,7 +148,13 @@ function Form({
 }
 
 function Submit(props) {
-    const { loading } = useContext(Handler);
+    const handlers = useContext(Handler);
+    if (!handlers) {
+        throw new Error(
+            "You are using Submit without a Form Component (you may be importing Form Component from wrong path"
+        );
+    }
+    const { loading } = handlers;
     const { loader, loaderProps } = props;
     const defaultLoader = (
         <CircularProgress
