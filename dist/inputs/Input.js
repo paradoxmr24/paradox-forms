@@ -9,6 +9,8 @@ exports.default = void 0;
 
 require("core-js/modules/web.dom-collections.iterator.js");
 
+require("core-js/modules/es.regexp.to-string.js");
+
 var _react = _interopRequireWildcard(require("react"));
 
 var _material = require("@mui/material");
@@ -43,26 +45,42 @@ function Input(props) {
   const {
     values,
     errors,
+    setValues,
     onChangeHandler,
     loading
   } = (0, _react.useContext)(_useForm.Handler);
+  let value = values[name];
+  let changeHandler = onChangeHandler;
+
+  if (values[name] instanceof Date) {
+    const date = values[name];
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    value = "".concat(year, "-").concat(month, "-").concat(day);
+
+    changeHandler = e => {
+      setValues({
+        [name]: new Date(e.target.value)
+      });
+    };
+  }
+
   return /*#__PURE__*/_react.default.createElement(_material.TextField, _extends({
-    value: values[name],
+    value: value,
     name: name,
-    onChange: onChangeHandler,
-    disabled: loading
-  }, rest, {
-    sx: _objectSpread(_objectSpread({
-      marginTop: "8px"
-    }, sx), {}, {
+    onChange: changeHandler,
+    disabled: loading,
+    sx: _objectSpread({
+      marginTop: "8px",
       "& .MuiOutlinedInput-input": {
         padding: "8px"
       }
-    })
+    }, sx)
   }, errors[name] ? {
     error: true,
     helperText: errors[name]
-  } : {}));
+  } : {}, rest));
 }
 
 var _default = Input;
