@@ -116,7 +116,7 @@ function useForm(fields) {
   }, [initialValues]);
   const setManually = (0, _react.useCallback)(values => {
     setValues(prev => {
-      const newValues = values === "function" ? values[prev] : values;
+      const newValues = typeof values === "function" ? values(prev) : values;
       return _objectSpread(_objectSpread({}, prev), newValues);
     });
     setErrors({});

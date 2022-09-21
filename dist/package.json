@@ -1,6 +1,6 @@
 {
     "name": "paradox-forms",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "private": false,
     "dependencies": {
         "paradox-hooks": "^1.0.1"
@@ -19,7 +19,7 @@
     ],
     "scripts": {
         "start": "react-scripts start",
-        "build": "rmdir /s /q dist && set NODE_ENV=production && babel src/lib --out-dir dist --copy-files && copy package.json dist && copy package.json dist",
+        "build": "rmdir /s /q dist && set NODE_ENV=production && babel src/lib --out-dir dist --copy-files && copy package.json dist && copy README.md dist",
         "test": "react-scripts test",
         "eject": "react-scripts eject"
     },
