@@ -18,3 +18,7 @@ Passed value as a argument in setValues function
 
 v1.2.2
 Bugs from previous version Solved
+
+v1.3.0
+Final prop added to from to finalize data once again before submitting
+Note: This final will run on finalized values of particular fields

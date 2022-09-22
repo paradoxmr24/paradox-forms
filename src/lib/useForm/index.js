@@ -119,6 +119,7 @@ function Form({
     method,
     action,
     enctype,
+    final,
     retainOnSubmit,
     ...rest
 }) {
@@ -127,12 +128,21 @@ function Form({
     const submitMiddleware = async e => {
         e.preventDefault();
         if (!handlers.submitValidator()) {
+            // Validating before submitting
             return console.log("Form not validated");
         }
         setLoading(true);
 
-        const finalValues = finalizeValues(handlers);
+        // Tuning values with the functions passed in final field given in the fields
+        const tunedValues = tuneValues(handlers);
+
+        // Finalyzing values with the functions passed in final prop
+        const finalValues = finalize(tunedValues, final);
+
+        // Applying encoding on the data before submitting
         const values = encodeData(finalValues, enctype);
+
+        // Getting axios method to use based on the method prop
         const requestMethod = createAxiosMethod(method);
         try {
             const response = await axios({
@@ -201,12 +211,19 @@ function createAxiosMethod(method = "GET") {
     }
 }
 
-function finalizeValues(handlers) {
+function tuneValues(handlers) {
     const values = { ...handlers.values };
     for (const field in handlers.finals) {
         values[field] = handlers.finals[field](handlers.values[field]);
     }
     return values;
+}
+
+function finalize(tunedValues, finalizer) {
+    if (typeof finalizer === "function") {
+        return finalizer(tunedValues);
+    }
+    return tunedValues;
 }
 
 export { Form, Submit, Handler, useForm };

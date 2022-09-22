@@ -65,6 +65,7 @@ const UseFormImplementation = () => {
                         method="POST"
                         handlers={handlers}
                         onError={errorHandler}
+                        final={values => ({ data: values })}
                         retainOnSubmit>
                         <Input variant="outlined" fullWidth name="name" placeholder="Name" />
                         <Input variant="outlined" fullWidth name="email" placeholder="Email" />
