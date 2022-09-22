@@ -24,7 +24,7 @@ var _utilities = require("../utilities");
 
 var _axios = _interopRequireDefault(require("axios"));
 
-const _excluded = ["children", "onSubmit", "onError", "handlers", "method", "action", "enctype", "retainOnSubmit"];
+const _excluded = ["children", "onSubmit", "onError", "handlers", "method", "action", "enctype", "final", "retainOnSubmit"];
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -152,6 +152,7 @@ function Form(_ref) {
     method,
     action,
     enctype,
+    final,
     retainOnSubmit
   } = _ref,
       rest = _objectWithoutProperties(_ref, _excluded);
@@ -166,12 +167,18 @@ function Form(_ref) {
     e.preventDefault();
 
     if (!handlers.submitValidator()) {
+      // Validating before submitting
       return console.log("Form not validated");
     }
 
-    setLoading(true);
-    const finalValues = finalizeValues(handlers);
-    const values = (0, _utilities.encodeData)(finalValues, enctype);
+    setLoading(true); // Tuning values with the functions passed in final field given in the fields
+
+    const tunedValues = tuneValues(handlers); // Finalyzing values with the functions passed in final prop
+
+    const finalValues = finalize(tunedValues, final); // Applying encoding on the data before submitting
+
+    const values = (0, _utilities.encodeData)(finalValues, enctype); // Getting axios method to use based on the method prop
+
     const requestMethod = createAxiosMethod(method);
 
     try {
@@ -257,7 +264,7 @@ function createAxiosMethod() {
   }
 }
 
-function finalizeValues(handlers) {
+function tuneValues(handlers) {
   const values = _objectSpread({}, handlers.values);
 
   for (const field in handlers.finals) {
@@ -265,4 +272,12 @@ function finalizeValues(handlers) {
   }
 
   return values;
+}
+
+function finalize(tunedValues, finalizer) {
+  if (typeof finalizer === "function") {
+    return finalizer(tunedValues);
+  }
+
+  return tunedValues;
 }
