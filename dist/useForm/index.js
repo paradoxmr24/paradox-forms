@@ -61,13 +61,21 @@ function useForm(fields) {
     const validators = {};
 
     for (const name in fields) {
-      if (fields[name].validator) {
-        validators[name] = fields[name].validator;
+      const validator = fields[name].validators || fields[name].validator;
+
+      if (validator) {
+        if (Array.isArray(validator)) {
+          validators[name] = validator;
+        } else {
+          validators[name] = [validator];
+        }
       }
     }
 
+    console.log(validators);
     return validators;
   }, [fields]);
+  console.log(validators);
   const finals = (0, _react.useMemo)(() => {
     const finals = {};
 
@@ -82,23 +90,25 @@ function useForm(fields) {
   const [values, setValues] = (0, _react.useState)(initialValues);
   const [errors, setErrors] = (0, _react.useState)({});
   const validate = (0, _react.useCallback)((name, value) => {
-    const validator = validators[name];
+    // if the fields doesn't contain any validators
+    if (!validators[name]) return true;
+    return validators[name].every(validator => {
+      if (typeof validator === "function") {
+        const helperText = validator(value);
+        setErrors(prev => _objectSpread(_objectSpread({}, prev), {}, {
+          [name]: helperText
+        }));
+        return !helperText;
+      } else if (typeof validator === "string") {
+        const helperText = validator;
+        setErrors(prev => _objectSpread(_objectSpread({}, prev), {}, {
+          [name]: value ? "" : helperText
+        }));
+        return Boolean(value);
+      }
 
-    if (typeof validator === "function") {
-      const helperText = validators[name](value);
-      setErrors(prev => _objectSpread(_objectSpread({}, prev), {}, {
-        [name]: helperText
-      }));
-      return !helperText;
-    } else if (typeof validator === "string") {
-      const helperText = validator;
-      setErrors(prev => _objectSpread(_objectSpread({}, prev), {}, {
-        [name]: value ? "" : helperText
-      }));
-      return value;
-    }
-
-    return true;
+      return true;
+    });
   }, [validators]);
   const onChangeHandler = (0, _react.useCallback)(e => {
     const {

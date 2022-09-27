@@ -18,12 +18,20 @@ function useForm(fields) {
     const validators = useMemo(() => {
         const validators = {};
         for (const name in fields) {
-            if (fields[name].validator) {
-                validators[name] = fields[name].validator;
+            const validator = fields[name].validators || fields[name].validator;
+            if (validator) {
+                if (Array.isArray(validator)) {
+                    validators[name] = validator;
+                } else {
+                    validators[name] = [validator];
+                }
             }
         }
+        console.log(validators);
         return validators;
     }, [fields]);
+
+    console.log(validators);
 
     const finals = useMemo(() => {
         const finals = {};
@@ -40,23 +48,27 @@ function useForm(fields) {
 
     const validate = useCallback(
         (name, value) => {
-            const validator = validators[name];
-            if (typeof validator === "function") {
-                const helperText = validators[name](value);
-                setErrors(prev => ({
-                    ...prev,
-                    [name]: helperText,
-                }));
-                return !helperText;
-            } else if (typeof validator === "string") {
-                const helperText = validator;
-                setErrors(prev => ({
-                    ...prev,
-                    [name]: value ? "" : helperText,
-                }));
-                return value;
-            }
-            return true;
+            // if the fields doesn't contain any validators
+            if (!validators[name]) return true;
+
+            return validators[name].every(validator => {
+                if (typeof validator === "function") {
+                    const helperText = validator(value);
+                    setErrors(prev => ({
+                        ...prev,
+                        [name]: helperText,
+                    }));
+                    return !helperText;
+                } else if (typeof validator === "string") {
+                    const helperText = validator;
+                    setErrors(prev => ({
+                        ...prev,
+                        [name]: value ? "" : helperText,
+                    }));
+                    return Boolean(value);
+                }
+                return true;
+            });
         },
         [validators]
     );

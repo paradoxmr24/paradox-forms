@@ -22,3 +22,8 @@ Bugs from previous version Solved
 v1.3.0
 Final prop added to from to finalize data once again before submitting
 Note: This final will run on finalized values of particular fields
+
+v1.4.0
+validators field added in fields to apply multiple validations (in Array),
+you can pass in one validator or multiple validators as array of validators
+Note: validator and validators are both working but validator will be removed in future updates

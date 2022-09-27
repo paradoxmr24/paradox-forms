@@ -17,7 +17,7 @@ var _material = require("@mui/material");
 
 var _useForm = require("../useForm/");
 
-const _excluded = ["sx", "name"];
+const _excluded = ["sx", "name", "maxLength", "minLength"];
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
@@ -38,7 +38,9 @@ function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) r
 function Input(props) {
   const {
     sx,
-    name
+    name,
+    maxLength,
+    minLength
   } = props,
         rest = _objectWithoutProperties(props, _excluded);
 
@@ -48,7 +50,10 @@ function Input(props) {
     setValues,
     onChangeHandler,
     loading
-  } = (0, _react.useContext)(_useForm.Handler);
+  } = (0, _react.useContext)(_useForm.Handler); // const changeHandlerMiddleware = function(e) {
+  //     if(e.target.value.length <= maxLength)
+  // }
+
   let value = values[name];
   let changeHandler = onChangeHandler;
 

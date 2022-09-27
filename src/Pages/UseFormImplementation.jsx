@@ -11,27 +11,30 @@ const UseFormImplementation = () => {
             () => ({
                 name: {
                     value: "",
-                    validator: "name is required",
+                    validators: [
+                        "name is required",
+                        value => (value.length > 13 ? "Cannot exceed 13 characters" : ""),
+                    ],
                     final: value => value + " is my name",
                 },
                 email: { value: "", validator: validators.email },
-                phone: { value: "", validator: validators.phone },
+                phone: { value: "", validators: validators.phone },
                 dob: { value: new Date() },
             }),
             []
         )
     );
 
-    const handlers2 = useForm(
-        useMemo(
-            () => ({
-                name: { value: "", validator: "name is required" },
-                email: { value: "", validator: validators.email },
-                phone: { value: "", validator: validators.phone },
-            }),
-            []
-        )
-    );
+    // const handlers2 = useForm(
+    //     useMemo(
+    //         () => ({
+    //             name: { value: "", validator: "name is required" },
+    //             email: { value: "", validator: validators.email },
+    //             phone: { value: "", validator: validators.phone },
+    //         }),
+    //         []
+    //     )
+    // );
 
     const submit = async (response, values) => {
         console.log(values);
@@ -101,7 +104,7 @@ const UseFormImplementation = () => {
                 <Card sx={{ p: "24px", width: "500px", mx: "auto" }}>
                     <Typography variant="h5">Use Form 2</Typography>
                     <Divider />
-                    <Form onSubmit={submit} handlers={handlers2} retainOnSubmit>
+                    {/* <Form onSubmit={submit} handlers={handlers2} retainOnSubmit>
                         <Input variant="outlined" fullWidth name="name" placeholder="Name" />
                         <Input variant="outlined" fullWidth name="email" placeholder="Email" />
                         <Input variant="outlined" fullWidth name="phone" placeholder="Phone" />
@@ -112,7 +115,7 @@ const UseFormImplementation = () => {
                                 </Button>
                             )}
                         </Submit>
-                    </Form>
+                    </Form> */}
                 </Card>
             </Box>
         </>
