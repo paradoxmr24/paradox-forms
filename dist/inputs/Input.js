@@ -50,10 +50,7 @@ function Input(props) {
     setValues,
     onChangeHandler,
     loading
-  } = (0, _react.useContext)(_useForm.Handler); // const changeHandlerMiddleware = function(e) {
-  //     if(e.target.value.length <= maxLength)
-  // }
-
+  } = (0, _react.useContext)(_useForm.Handler);
   let value = values[name];
   let changeHandler = onChangeHandler;
 
