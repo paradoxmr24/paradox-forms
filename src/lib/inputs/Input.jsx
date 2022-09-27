@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TextField } from "@mui/material";
 import { useContext } from "react";
 import { Handler } from "../useForm/";
@@ -6,10 +6,6 @@ import { Handler } from "../useForm/";
 function Input(props) {
     const { sx, name, maxLength, minLength, ...rest } = props;
     const { values, errors, setValues, onChangeHandler, loading } = useContext(Handler);
-
-    // const changeHandlerMiddleware = function(e) {
-    //     if(e.target.value.length <= maxLength)
-    // }
 
     let value = values[name];
 

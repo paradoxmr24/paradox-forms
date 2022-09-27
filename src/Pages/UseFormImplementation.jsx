@@ -11,30 +11,29 @@ const UseFormImplementation = () => {
             () => ({
                 name: {
                     value: "",
-                    validators: [
-                        "name is required",
-                        value => (value.length > 13 ? "Cannot exceed 13 characters" : ""),
-                    ],
+                    validator: [value => (value.length > 13 ? "Cannot exceed 13 characters" : "")],
+                    required: true,
+                    minLength: 3,
                     final: value => value + " is my name",
                 },
                 email: { value: "", validator: validators.email },
-                phone: { value: "", validators: validators.phone },
+                phone: { value: "", validator: validators.phone },
                 dob: { value: new Date() },
             }),
             []
         )
     );
 
-    // const handlers2 = useForm(
-    //     useMemo(
-    //         () => ({
-    //             name: { value: "", validator: "name is required" },
-    //             email: { value: "", validator: validators.email },
-    //             phone: { value: "", validator: validators.phone },
-    //         }),
-    //         []
-    //     )
-    // );
+    const handlers2 = useForm(
+        useMemo(
+            () => ({
+                name: "",
+                email: { value: "", validator: validators.email },
+                phone: { value: "", validator: validators.phone },
+            }),
+            []
+        )
+    );
 
     const submit = async (response, values) => {
         console.log(values);

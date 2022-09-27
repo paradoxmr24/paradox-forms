@@ -1,10 +1,59 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
+import React, {
+    createContext,
+    useCallback,
+    useContext,
+    useMemo,
+    useReducer,
+    useState,
+} from "react";
 import { CircularProgress } from "@mui/material";
 import { useSnack } from "paradox-hooks";
 import { encodeData } from "../utilities";
 import axios from "axios";
 
 const Handler = createContext(null);
+
+const validatorsDispatch = function (validators, newValidator) {
+    const updatedValidators = [...(validators[newValidator.name] || []), ...newValidator.validator];
+    return { ...validators, [newValidator.name]: updatedValidators };
+};
+
+const initializeValidators = fields => {
+    console.log("initializeValidators");
+    const validators = {};
+    for (const name in fields) {
+        const field = fields[name];
+        validators[name] = [];
+        const rules = field.validator;
+        if (rules) {
+            if (Array.isArray(rules)) {
+                validators[name].push(...rules);
+            } else {
+                validators[name].push(rules);
+            }
+        }
+
+        const maxLength = field.maxLength;
+        if (maxLength) {
+            validators[name].unshift(value =>
+                value.length <= maxLength ? "" : `Maximum ${maxLength} characters are allowed`
+            );
+        }
+
+        const minLength = field.minLength;
+        if (minLength) {
+            validators[name].unshift(value =>
+                value.length >= minLength ? "" : `Must contain at least ${minLength} characters`
+            );
+        }
+
+        const required = field.required;
+        if (required) {
+            validators[name].unshift(value => (value ? "" : "This field is required"));
+        }
+    }
+    return validators;
+};
 
 function useForm(fields) {
     const initialValues = useMemo(() => {
@@ -15,23 +64,7 @@ function useForm(fields) {
         return inputs;
     }, [fields]);
 
-    const validators = useMemo(() => {
-        const validators = {};
-        for (const name in fields) {
-            const validator = fields[name].validators || fields[name].validator;
-            if (validator) {
-                if (Array.isArray(validator)) {
-                    validators[name] = validator;
-                } else {
-                    validators[name] = [validator];
-                }
-            }
-        }
-        console.log(validators);
-        return validators;
-    }, [fields]);
-
-    console.log(validators);
+    const [validators, addValidator] = useReducer(validatorsDispatch, fields, initializeValidators);
 
     const finals = useMemo(() => {
         const finals = {};
@@ -46,61 +79,62 @@ function useForm(fields) {
     const [values, setValues] = useState(initialValues);
     const [errors, setErrors] = useState({});
 
+    // validate a single field
     const validate = useCallback(
         (name, value) => {
-            // if the fields doesn't contain any validators
-            if (!validators[name]) return true;
+            const rules = validators[name];
+            // if the validator doesn't contain any rules
+            if (rules.length === 0) return true;
 
-            return validators[name].every(validator => {
-                if (typeof validator === "function") {
-                    const helperText = validator(value);
-                    setErrors(prev => ({
-                        ...prev,
+            return rules.every(rule => {
+                if (typeof rule === "function") {
+                    const helperText = rule(value);
+                    setErrors(validators => ({
+                        ...validators,
                         [name]: helperText,
                     }));
                     return !helperText;
-                } else if (typeof validator === "string") {
-                    const helperText = validator;
-                    setErrors(prev => ({
-                        ...prev,
-                        [name]: value ? "" : helperText,
-                    }));
-                    return Boolean(value);
+                } else {
+                    throw new Error("Invalid rule: Must be a function");
                 }
-                return true;
             });
         },
         [validators]
     );
 
+    // onchange handler to fields
     const onChangeHandler = useCallback(
         e => {
             const { name, value } = e.target;
+            // validate the field to show error message
             validate(name, value);
-            setValues(prev => ({
-                ...prev,
+            setValues(validators => ({
+                ...validators,
                 [name]: value,
             }));
         },
         [validate]
     );
 
+    // set all values and errors to empty
     const reset = useCallback(() => {
         setValues(initialValues);
         setErrors({});
     }, [initialValues]);
 
+    // to set values manually
     const setManually = useCallback(
         values => {
-            setValues(prev => {
-                const newValues = typeof values === "function" ? values(prev) : values;
-                return { ...prev, ...newValues };
+            setValues(validators => {
+                const newValues = typeof values === "function" ? values(validators) : values;
+                return { ...validators, ...newValues };
             });
             setErrors({});
         },
         [setValues]
     );
 
+    // Checks if all the fields are validated before submitting
     const submitValidator = useCallback(() => {
         for (const name in values) {
             if (!validate(name, values[name])) {
@@ -110,8 +144,8 @@ function useForm(fields) {
         return true;
     }, [values, validate]);
 
-    return useMemo(() => {
-        return {
+    return useMemo(
+        () => ({
             values,
             onChangeHandler,
             errors,
@@ -119,8 +153,10 @@ function useForm(fields) {
             reset,
             setValues: setManually,
             finals,
-        };
-    }, [values, onChangeHandler, errors, submitValidator, reset, setManually, finals]);
+            addValidator,
+        }),
+        [values, onChangeHandler, errors, submitValidator, reset, setManually, finals, addValidator]
+    );
 }
 
 function Form({

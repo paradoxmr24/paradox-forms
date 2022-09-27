@@ -1,6 +1,6 @@
 {
     "name": "paradox-forms",
-    "version": "1.4.0",
+    "version": "2.0.0",
     "private": false,
     "dependencies": {
         "paradox-hooks": "^1.0.1"
